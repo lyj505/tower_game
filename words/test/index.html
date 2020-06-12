@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>
+        我是h1
+        <button id="elementId" onclick="alert('hello!');">Say Hello!</button>
+    </h1>
+    <script>
+        document.getElementsByTagName('body')[0].addEventListener(
+            'click',
+            function (e) {
+                e.stopPropagation();
+                console.log('this is body click---')
+            },
+            true
+        )
+
+
+        document.getElementById('elementId').addEventListener(
+            'click',
+            function (e) {
+                e.stopPropagation();
+                console.log('I clicked it from addEventListener!')
+            },
+            false
+        )
+
+
+        document.getElementById('elementId').onclick = function () {
+            //this will cover html element node event
+            console.log('I clicked it!')
+        }
+
+
+
+
+        function initEvent(targetNode) {
+            // let ev = new Event()
+            let ev = new Event("look", { "bubbles": true, "cancelable": false });
+            ev.target = targetNode // ev.target 是当前用户真正出发的节点
+                ; (ev.isPropagationStopped = false), // 是否停止event的传播
+                    (ev.isDefaultPrevented = false) // 是否阻止浏览器默认的行为
+
+            ev.stopPropagation = function () {
+                this.isPropagationStopped = true
+            }
+            ev.preventDefault = function () {
+                this.isDefaultPrevented = true
+            }
+            return ev
+        }
+
+
+        function calculateNodePath(event) {
+            let target = event.target
+            let elements = [] // 用于存储从当前节点到html节点的 节点路径
+            do elements.push(target)
+            while ((target = target.parentNode))
+            return elements.reverse() // 节点顺序为: targetElement ==> html
+        }
+
+        // 依次触发 capture类型的handlers, 顺序为: html ==> targetElement
+        function executeCaptureHandlers(elements, ev) {
+            for (var i = 0; i < elements.length; i++) {
+                if (ev.isPropagationStopped) break
+
+                var curElement = elements[i]
+                var handlers =
+                    (currentElement.__handlers &&
+                        currentElement.__handlers[ev.type] &&
+                        currentElement.__handlers[ev.type]['capture']) ||
+                    []
+                ev.currentTarget = curElement
+                for (var h = 0; h < handlers.length; h++) {
+                    handlers[h].call(currentElement, ev)
+                }
+            }
+        }
+
+        function executeInPropertyHandler(ev) {
+            if (!ev.isPropagationStopped) {
+                ev.target['on' + ev.type].call(ev.target, ev)
+            }
+        }
+
+        // 基本上和 capture 阶段处理方式相同
+        // 唯一的区别是 handlers 是逆向遍历的: targetElement ==> html
+
+        function executeBubbleHandlers(elements, ev) {
+            elements.reverse()
+            for (let i = 0; i < elements.length; i++) {
+                if (isPropagationStopped) {
+                    break
+                }
+                var handlers =
+                    (currentElement.__handlers &&
+                        currentElement.__handlers[ev.type] &&
+                        currentElement.__handelrs[ev.type]['bubble']) ||
+                    []
+                ev.currentTarget = currentElement
+                for (var h = 0; h < handlers.length; h++) {
+                    handlers[h].call(currentElement, ev)
+                }
+            }
+        }
+
+        function executeNodeDefaultHehavior(ev) {
+            if (!isDefaultPrevented) {
+                // 对于 a 标签, 默认行为就是跳转链接
+                if (ev.type === 'click' && ev.tagName.toLowerCase() === 'a') {
+                    window.location = ev.target.href
+                }
+                // 对于其他标签, 浏览器会有其他的默认行为
+            }
+        }
+
+
+        const currentNode = document.getElementById("elementId");
+        // 1.创建event对象, 初始化需要的数据
+        let event = initEvent(currentNode)
+
+        function handleEvent(event) {
+            // 2.计算触发 event事件的DOM节点到html节点的**节点路径
+            let elements = calculateNodePath(event)
+            // 3.触发capture类型的handlers
+            executeCaptureHandlers(elements, event)
+            // 4.触发绑定在 onXXX 属性上的 handler
+            executeInPropertyHandler(event)
+            // 5.触发bubble类型的handlers
+            executeBubbleHandlers(elements, event)
+            // 6.触发该DOM节点的浏览器默认行为
+            executeNodeDefaultHehavior(event)
+        }
+        // handleEvent(event)
+
+// document.dispatchEvent(_event);  //lootEvent_document
+    </script>
+</body>
+
+</html>
