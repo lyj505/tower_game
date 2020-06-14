@@ -4,17 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.js"></script>
     <title>Document</title>
     <style>
         #mobile {
             height: 900px;
         }
 
-        .contaniner{
+        .contaniner {
             overflow-y: auto;
             height: 400px;
         }
 
+        .square {
+            background-color: red;
+            color: #fff;
+            width: 100%;
+            height: 300px;
+        }
     </style>
 </head>
 
@@ -30,6 +37,9 @@
     <!-- gesture手势 -->
 
     <div class="contaniner">
+        <button class="square">
+            我是个hummer
+        </button>
         <h1>
             PC端
         </h1>
@@ -57,6 +67,9 @@
         function bindPcInputEvent() {
             pc_input.addEventListener('keydown', function () {
                 console.log('----this is keydown event');
+            })
+            pc_input.addEventListener('keypress', function () {
+                console.log('----this is keypress event');
             })
             pc_input.addEventListener('keyup', function () {
                 console.log('----this is keyUp event');
@@ -86,7 +99,7 @@
 
             //mousedown----->mouseup----->click
 
-            //focus ---> keydown ---> keyup --->
+            //focus ---> keydown ---> keypress -> keyup --->
 
             pc_dom.addEventListener('mouseover', function () {
                 console.log('----this is mouseover event');
@@ -126,11 +139,41 @@
                 //mouse scroll event
                 console.log('----this is scroll event');
             })
+
+
+            //when u trigger a press click
+            // touchstart --> touchend --> mousemove --> mousedown -->mouseup -->click
+            //mobile gesture
+            pc_dom.addEventListener('touchstart', function (e) {
+                e.stopPropagation();
+                console.log('----this is touchstart event');
+            })
+            pc_dom.addEventListener('touchmove', function (e) {
+                e.stopPropagation();
+                console.log('----this is touchmove event');
+            })
+            pc_dom.addEventListener('touchend', function (e) {
+                e.stopPropagation();
+                console.log('----this is touchend event');
+            })
+            pc_dom.addEventListener('touchcancel', function (e) {
+                e.stopPropagation();
+                console.log('----this is touchcancel event');
+            })
+
+            //when u dragger a element by a direction then u will trigger 
+            // touchstart -->touchmove --->touchend
+
+
         }
 
 
         (function () {
-            const body_dom = document.getElementsByTagName('contaniner')[0];
+            window.addEventListener('load', function () {
+                console.log('--document--this is load event');
+            })
+
+            const body_dom = document.getElementsByClassName('contaniner')[0];
             body_dom.addEventListener('load', function () {
                 //mouse scroll event
                 console.log('----this is load event');
@@ -140,6 +183,45 @@
                 console.log('----this is scroll event');
             })
         })()
+
+
+
+        //use hammerjs
+        // Get a reference to an element.
+        var square = document.querySelector('.square');
+
+        var hammer1 = new Hammer(square);
+        hammer1.on('press', function (e) {
+            alert("press");
+            e.target.classList.toggle('expand');
+            console.log("You're pressing me!");
+            console.log(e);
+        });
+
+
+        // return;
+        // // Create a manager to manage the element.
+        var mc = new Hammer.Manager(square);
+        mc.on("pinch", function (ev) {
+            alert(ev.scale);
+        });
+
+        // // Create a recognizer.
+        // var TripleTap = new Hammer.Tap({
+        //     event: 'tripletap',
+        //     taps: 3
+        // });
+
+        // // Add the recognizer to the manager.
+        // manager.add(TripleTap);
+
+        // // Subscribe to the event.
+        // manager.on('tripletap', function (e) {
+        //     e.target.classList.toggle('expand');
+        //     console.log("You're triple tapping me!");
+        //     console.log(e);
+        // });
+
 
     </script>
 </body>
